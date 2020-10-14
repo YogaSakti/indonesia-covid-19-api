@@ -5,25 +5,38 @@ import {
   fetchSembuh,
   fetchDalamPerawatan,
   fetchJumlahKasus,
-  fetchLastUpdate
+  fetchLastUpdate,
+  fetchDataStatistik,
+  fetchUpdate,
+  fetchDataLain
 } from "../util/fetcher";
 
 export default async (_, response: NowResponse) => {
-  const [meninggal, sembuh, perawatan, jumlahKasus, lastUpdate] = await Promise.all([
-    fetchMeninggal(),
-    fetchSembuh(),
-    fetchDalamPerawatan(),
-    fetchJumlahKasus(),
-    fetchLastUpdate()
-  ]);
+  // const [meninggal, sembuh, perawatan, jumlahKasus, lastUpdate] = await Promise.all([
+  //   fetchMeninggal(),
+  //   fetchSembuh(),
+  //   fetchDalamPerawatan(),
+  //   fetchJumlahKasus(),
+  //   fetchLastUpdate()
+  // ]);
 
+  const [{
+    perawatan,
+    sembuh,
+    meninggal,
+    jumlahKasus
+  }, dataUpdate, dataLain] = await Promise.all([
+    fetchDataStatistik(),
+    fetchUpdate(),
+    fetchDataLain()
+  ])
   response.json({
     perawatan,
     sembuh,
     meninggal,
     jumlahKasus,
-    lastUpdate,
-
+    penambahan: dataUpdate,
+    lainnya: dataLain,
     perKasus: {
       json: "https://indonesia-covid-19.mathdro.id/api/kasus",
       csv: "https://indonesia-covid-19.mathdro.id/api/kasus.csv",
@@ -38,7 +51,7 @@ export default async (_, response: NowResponse) => {
       json: "https://indonesia-covid-19.mathdro.id/api/harian",
       csv: "https://indonesia-covid-19.mathdro.id/api/harian.csv"
     },
-    wismaAtlet:{
+    wismaAtlet: {
       json: "https://indonesia-covid-19.mathdro.id/api/wisma-atlet",
       karyawan: "https://indonesia-covid-19.mathdro.id/api/wisma-atlet/karyawan",
       ruangan: "https://indonesia-covid-19.mathdro.id/api/wisma-atlet/ruangan",

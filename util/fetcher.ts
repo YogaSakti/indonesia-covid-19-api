@@ -3,7 +3,7 @@ import withRetry from "@zeit/fetch-retry";
 
 export const fetch = withRetry(unfetch);
 
-import { fetchFeatures, extractSingleValue } from "./data";
+import { fetchFeatures, extractSingleValue, normalizeKeys } from "./data";
 import { createArrayQuery, where } from "./query";
 import { endpoints } from "./endpoints";
 import { addDays } from "./date";
@@ -200,4 +200,54 @@ export const fetchKasur = async () => {
       jns_rr: ["RU", "RA", "ICU", "HCU"]
     })
   }).then(res => res.json());
+};
+
+export const fetchDataStatistik = async () => {
+  return await fetch(endpoints.update_covid19, {
+    method: 'GET',
+    headers: {
+      'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+      'referer': 'https://data.covid19.go.id/public/index.html'
+    }
+  }).then(res => res.json())
+    .then(({ update: { total } }) => {
+      return {
+        "perawatan": total.jumlah_dirawat,
+        "sembuh": total.jumlah_sembuh,
+        "meninggal": total.jumlah_meninggal,
+        "jumlahKasus": total.jumlah_positif
+      }
+    });
+};
+
+export const fetchDataLain = async () => {
+  return await fetch(endpoints.update_covid19, {
+    method: 'GET',
+    headers: {
+      'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+      'referer': 'https://data.covid19.go.id/public/index.html'
+    }
+  }).then(res => res.json())
+    .then(({ data }) => {
+      delete data.id
+      return normalizeKeys(data)
+    });
+};
+
+export const fetchUpdate = async () => {
+  return await fetch(endpoints.update_covid19, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+      'referer': 'https://data.covid19.go.id/public/index.html'
+    }
+  }).then(res => res.json())
+    .then(({ update: { penambahan } }) => ({
+      "jumlahKasus": penambahan.jumlah_positif,
+      "meninggal": penambahan.jumlah_meninggal,
+      "sembuh": penambahan.jumlah_sembuh,
+      "perawatan": penambahan.jumlah_dirawat,
+      "lastUpdate": penambahan.created
+    }));
 };
